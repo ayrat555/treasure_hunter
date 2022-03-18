@@ -22,9 +22,23 @@ defmodule TreasureHunter.Wallet do
 
   @spec create_address!(Map.t()) :: Address.t() | no_return()
   def create_address!(params) do
-    %Address{}
-    |> Address.changeset(params)
-    |> Repo.insert!()
+    case Repo.get_by(Address, params) do
+      nil ->
+        create_addres!(params)
+
+      found ->
+        found
+    end
+  end
+
+  @spec mnemonic_words() :: [String.t()]
+  def mnemonic_words do
+    :treasure_hunter
+    |> :code.priv_dir()
+    |> Path.join("words")
+    |> File.stream!()
+    |> Stream.map(&String.trim/1)
+    |> Enum.to_list()
   end
 
   defp create_mnemonic!(params) do
@@ -36,6 +50,12 @@ defmodule TreasureHunter.Wallet do
   defp create_crypto!(type) do
     %Crypto{}
     |> Crypto.changeset(%{type: type})
+    |> Repo.insert!()
+  end
+
+  defp create_addres!(params) do
+    %Address{}
+    |> Address.changeset(params)
     |> Repo.insert!()
   end
 end

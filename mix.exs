@@ -23,9 +23,11 @@ defmodule TreasureHunter.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:cryptopunk, "~> 0.5"},
       {:ecto, "~> 3.7"},
       {:ecto_sql, "~> 3.0"},
       {:postgrex, ">= 0.0.0"},
+      {:oban, "~> 2.11"},
       {:ex_machina, "~> 2.7.0", only: [:test]}
     ]
   end
