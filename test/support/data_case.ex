@@ -9,6 +9,7 @@ defmodule TreasureHunter.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import TreasureHunter.DataCase
+      import TreasureHunter.Factory
     end
   end
 

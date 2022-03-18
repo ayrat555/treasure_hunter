@@ -5,8 +5,3 @@ config :treasure_hunter, TreasureHunter.Repo,
   password: "postgres",
   database: "treasure_hunter",
   hostname: "localhost"
-
-config :treasure_hunter,
-  ecto_repos: [TreasureHunter.Repo]
-
-import_config "#{Mix.env()}.exs"

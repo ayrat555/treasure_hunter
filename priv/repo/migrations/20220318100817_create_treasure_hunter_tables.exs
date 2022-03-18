@@ -19,28 +19,30 @@ defmodule TreasureHunter.Repo.Migrations.CreateTreasureHunterTables do
   end
 
   defp create_cryptos() do
-    create table(:cryptos, primary_key: false) do
-      add(:type, :string, primary_key: true)
+    create table(:cryptos) do
+      add(:type, :string)
 
       timestamps()
     end
+
+    create(unique_index(:cryptos, :type))
   end
 
   defp create_addresses() do
     create table(:addresses) do
       add(:path, :string, null: false)
       add(:address, :string, null: false)
-      add(:crypto_type, references(:cryptos, type: :string, column: :type))
+      add(:crypto_id, references(:cryptos))
       add(:mnemonic_id, references(:mnemonics))
 
-      add(:checked, :boolean)
+      add(:checked, :boolean, null: false, default: false)
       add(:used, :boolean)
       add(:balance, :decimal)
 
       timestamps()
     end
 
-    create(unique_index(:addresses, [:mnemonic_id, :crypto_type, :path]))
+    create(unique_index(:addresses, [:mnemonic_id, :crypto_id, :path]))
     create(index(:addresses, :checked))
     create(index(:addresses, :used))
     create(index(:addresses, :balance))
