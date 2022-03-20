@@ -1,6 +1,11 @@
 defmodule TreasureHunter.Bitcoin.Scheduler do
+  import Ecto.Query
+
   alias Cryptopunk.Crypto.Bitcoin
+  alias TreasureHunter.Bitcoin.Worker
+  alias TreasureHunter.Repo
   alias TreasureHunter.Wallet
+  alias TreasureHunter.Wallet.Address
 
   @legacy_path "m/44'/0'"
   @bech32_path "m/84'/0'"
@@ -19,6 +24,29 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
       create_bech32_addresses(mnemonic, crypto)
       create_p2sh_p2wpkh_addresses(mnemonic, crypto)
     end)
+  end
+
+  def enqueue_addresses_for_processing do
+    crypto = fetch_crypto()
+
+    addresses =
+      Address
+      |> where(
+        [address],
+        address.crypto_id == ^crypto.id and (address.checked == false or is_nil(address.checked))
+      )
+      |> limit(500)
+      |> Repo.all()
+
+    if Enum.empty?(addresses) do
+      :ok
+    else
+      for address <- addresses do
+        %{id: address.id}
+        |> Worker.new()
+        |> Oban.insert()
+      end
+    end
   end
 
   defp create_legacy_addresses(mnemonic, crypto) do
