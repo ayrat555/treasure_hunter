@@ -30,7 +30,8 @@ defmodule TreasureHunter.MixProject do
       {:oban, "~> 2.11"},
       {:postgrex, ">= 0.0.0"},
       {:sage, "~> 0.6"},
-      {:ex_machina, "~> 2.7.0", only: [:test]}
+      {:ex_machina, "~> 2.7.0", only: [:test]},
+      {:mox, "~> 1.0", only: :test}
     ]
   end
 

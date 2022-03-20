@@ -1,10 +1,11 @@
-defmodule TreasureHunter.ExplorerAPI do
+defmodule TreasureHunter.Bitcoin.ExplorerAPI do
   alias TreasureHunter.HTTPClient
+
+  @behaviour TreasureHunter.ExplorerAPI
 
   @base_url "https://blockstream.info/api/address/"
 
-  @spec fetch_info(String.t()) :: {:ok, map()} | {:error, any()}
-
+  @impl true
   def fetch_info(address) do
     address
     |> build_request()

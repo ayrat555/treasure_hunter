@@ -3,12 +3,18 @@ defmodule TreasureHunter.Bitcoin.Worker do
     queue: :bitcoin,
     unique: [period: 30]
 
-  alias TreasureHunter.ExplorerAPI
   alias TreasureHunter.Repo
   alias TreasureHunter.Wallet.Address
 
   @impl Worker
   def perform(%{args: %{"id" => address_id}}) do
+    case do_perform(address_id) do
+      {:ok, address, _} -> {:ok, address}
+      error -> error
+    end
+  end
+
+  defp do_perform(address_id) do
     Sage.new()
     |> Sage.run(:fetch_address, &fetch_address/2)
     |> Sage.run(:fetch_tx_count_and_balance, &fetch_tx_count_and_balance/2)
@@ -24,7 +30,7 @@ defmodule TreasureHunter.Bitcoin.Worker do
   end
 
   defp fetch_tx_count_and_balance(%{fetch_address: address}, _params) do
-    ExplorerAPI.fetch_info(address.address)
+    api_client().fetch_info(address.address)
   end
 
   defp update_address(
@@ -37,5 +43,11 @@ defmodule TreasureHunter.Bitcoin.Worker do
     address
     |> Address.changeset(%{tx_count: tx_count, balance: balance, checked: true})
     |> Repo.update()
+  end
+
+  defp api_client do
+    :treasure_hunter
+    |> Application.fetch_env!(Bitcoin)
+    |> Keyword.fetch!(:api_client)
   end
 end

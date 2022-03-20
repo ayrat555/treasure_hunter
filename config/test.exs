@@ -9,3 +9,5 @@ config :treasure_hunter, TreasureHunter.Repo,
   pool: Ecto.Adapters.SQL.Sandbox
 
 config :treasure_hunter, Oban, queues: false, plugins: false
+
+config :treasure_hunter, Bitcoin, api_client: MockExplorerAPI
