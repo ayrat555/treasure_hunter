@@ -37,15 +37,15 @@ defmodule TreasureHunter.Repo.Migrations.CreateTreasureHunterTables do
 
       add(:checked, :boolean, null: false, default: false)
       add(:uncompressed, :boolean, null: false, default: false)
-      add(:used, :boolean)
       add(:balance, :decimal)
+      add(:tx_count, :integer)
 
       timestamps()
     end
 
     create(unique_index(:addresses, [:mnemonic_id, :crypto_id, :path, :uncompressed]))
     create(index(:addresses, :checked))
-    create(index(:addresses, :used))
     create(index(:addresses, :balance))
+    create(index(:addresses, :tx_count))
   end
 end

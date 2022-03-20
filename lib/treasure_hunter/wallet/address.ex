@@ -9,15 +9,15 @@ defmodule TreasureHunter.Wallet.Address do
   @type t :: %__MODULE__{}
 
   @required_fields [:path, :address, :crypto_id, :mnemonic_id]
-  @optional_fields [:checked, :used, :balance, :uncompressed]
+  @optional_fields [:checked, :balance, :uncompressed, :tx_count]
 
   schema "addresses" do
     field(:path, :string)
     field(:address, :string)
     field(:checked, :boolean)
-    field(:used, :boolean)
     field(:uncompressed, :boolean)
     field(:balance, :decimal)
+    field(:tx_count, :integer)
 
     belongs_to(:crypto, Crypto)
     belongs_to(:mnemonic, Mnemonic)
