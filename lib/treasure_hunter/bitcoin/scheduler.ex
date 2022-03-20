@@ -46,6 +46,8 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
         |> Worker.new()
         |> Oban.insert()
       end
+
+      enqueue_addresses_for_processing()
     end
   end
 

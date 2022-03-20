@@ -6,7 +6,8 @@ config :treasure_hunter, TreasureHunter.Repo,
   database: "treasure_hunter_test",
   hostname: "localhost",
   pool_size: 20,
-  pool: Ecto.Adapters.SQL.Sandbox
+  pool: Ecto.Adapters.SQL.Sandbox,
+  log: false
 
 config :treasure_hunter, Oban, queues: false, plugins: false
 
