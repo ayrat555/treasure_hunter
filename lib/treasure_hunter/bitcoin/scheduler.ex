@@ -26,6 +26,18 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
     end)
   end
 
+  def create_addresses_changing_first_word do
+    mnemonics = create_first_word_mnemonics()
+    crypto = fetch_crypto()
+
+    Enum.each(mnemonics, fn mnemonic ->
+      create_legacy_addresses(mnemonic, crypto)
+      create_legacy_uncompressed_addresses(mnemonic, crypto)
+      create_bech32_addresses(mnemonic, crypto)
+      create_p2sh_p2wpkh_addresses(mnemonic, crypto)
+    end)
+  end
+
   def enqueue_addresses_for_processing do
     crypto = fetch_crypto()
 
@@ -99,6 +111,26 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
     end)
   end
 
+  def create_first_word_mnemonics do
+    words = Wallet.mnemonic_words()
+
+    Stream.flat_map(words, fn word ->
+      Enum.flat_map(@mnemonic_lengths, fn length ->
+        Enum.map(words, fn first_word ->
+          if first_word != word do
+            base = List.duplicate(word, length - 1)
+
+            mnemonic = Enum.join([first_word | base], " ")
+
+            params = %{mnemonic: mnemonic, type: @seed_type}
+            Wallet.fetch_or_create_mnemonic!(params)
+          end
+        end)
+        |> Enum.reject(&is_nil/1)
+      end)
+    end)
+  end
+
   defp create_addresses(path_prefix, mnemonic, crypto, address_func, additional_params \\ %{}) do
     master_key = create_master_key(mnemonic.mnemonic)
     raw_paths = create_raw_paths(path_prefix)
@@ -115,7 +147,13 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
           additional_params
         )
 
-      Wallet.create_address!(params)
+      address = Wallet.create_address!(params)
+
+      %{id: address.id}
+      |> Worker.new()
+      |> Oban.insert()
+
+      address
     end)
   end
 
@@ -126,9 +164,9 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
   end
 
   defp create_raw_paths(path_prefix) do
-    accounts = 2
-    changes = 1
-    idxs = 2
+    accounts = 1
+    changes = 0
+    idxs = 1
 
     Enum.flat_map(0..accounts, fn account ->
       Enum.flat_map(0..idxs, fn idx ->
