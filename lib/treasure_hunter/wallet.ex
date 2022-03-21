@@ -1,4 +1,5 @@
 defmodule TreasureHunter.Wallet do
+  alias TreasureHunter.Bitcoin.Worker
   alias TreasureHunter.Repo
   alias TreasureHunter.Wallet.Address
   alias TreasureHunter.Wallet.Crypto
@@ -24,9 +25,17 @@ defmodule TreasureHunter.Wallet do
   def create_address!(params) do
     case Repo.get_by(Address, params) do
       nil ->
-        create_addres!(params)
+        address = do_create_address!(params)
+
+        enqueue_job(address.id)
+
+        address
 
       found ->
+        if !found.checked do
+          enqueue_job(found.id)
+        end
+
         found
     end
   end
@@ -41,6 +50,13 @@ defmodule TreasureHunter.Wallet do
     |> Enum.to_list()
   end
 
+  @spec update_mnemonic!(Mnemonic.t(), Map.t()) :: Mnemonic.t() | no_return()
+  def update_mnemonic!(mnemonic, params) do
+    mnemonic
+    |> Mnemonic.changeset(params)
+    |> Repo.update!()
+  end
+
   defp create_mnemonic!(params) do
     %Mnemonic{}
     |> Mnemonic.changeset(params)
@@ -53,9 +69,15 @@ defmodule TreasureHunter.Wallet do
     |> Repo.insert!()
   end
 
-  defp create_addres!(params) do
+  defp do_create_address!(params) do
     %Address{}
     |> Address.changeset(params)
     |> Repo.insert!()
+  end
+
+  defp enqueue_job(id) do
+    %{id: id}
+    |> Worker.new()
+    |> Oban.insert()
   end
 end

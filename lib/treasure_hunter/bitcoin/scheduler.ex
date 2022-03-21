@@ -19,10 +19,14 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
     crypto = fetch_crypto()
 
     Enum.each(mnemonics, fn mnemonic ->
-      create_legacy_addresses(mnemonic, crypto)
-      create_legacy_uncompressed_addresses(mnemonic, crypto)
-      create_bech32_addresses(mnemonic, crypto)
-      create_p2sh_p2wpkh_addresses(mnemonic, crypto)
+      if !mnemonic.checked do
+        create_legacy_addresses(mnemonic, crypto)
+        create_legacy_uncompressed_addresses(mnemonic, crypto)
+        create_bech32_addresses(mnemonic, crypto)
+        create_p2sh_p2wpkh_addresses(mnemonic, crypto)
+
+        Wallet.update_mnemonic!(mnemonic, %{checked: true})
+      end
     end)
   end
 
@@ -31,10 +35,14 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
     crypto = fetch_crypto()
 
     Enum.each(mnemonics, fn mnemonic ->
-      create_legacy_addresses(mnemonic, crypto)
-      create_legacy_uncompressed_addresses(mnemonic, crypto)
-      create_bech32_addresses(mnemonic, crypto)
-      create_p2sh_p2wpkh_addresses(mnemonic, crypto)
+      if !mnemonic.checked do
+        create_legacy_addresses(mnemonic, crypto)
+        create_legacy_uncompressed_addresses(mnemonic, crypto)
+        create_bech32_addresses(mnemonic, crypto)
+        create_p2sh_p2wpkh_addresses(mnemonic, crypto)
+
+        Wallet.update_mnemonic!(mnemonic, %{checked: true})
+      end
     end)
   end
 
@@ -114,7 +122,9 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
   def create_first_word_mnemonics do
     words = Wallet.mnemonic_words()
 
-    Stream.flat_map(words, fn word ->
+    words
+    |> Enum.reverse()
+    |> Stream.flat_map(fn word ->
       Enum.flat_map(@mnemonic_lengths, fn length ->
         Enum.map(words, fn first_word ->
           if first_word != word do
@@ -147,13 +157,7 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
           additional_params
         )
 
-      address = Wallet.create_address!(params)
-
-      %{id: address.id}
-      |> Worker.new()
-      |> Oban.insert()
-
-      address
+      Wallet.create_address!(params)
     end)
   end
 
