@@ -6,6 +6,7 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
   alias TreasureHunter.Repo
   alias TreasureHunter.Wallet
   alias TreasureHunter.Wallet.Address
+  alias TreasureHunter.Wallet.Mnemonic
 
   @legacy_path "m/44'/0'"
   @bech32_path "m/84'/0'"
@@ -31,8 +32,17 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
   end
 
   def create_addresses_changing_first_word do
-    mnemonics = create_first_word_mnemonics()
     crypto = fetch_crypto()
+
+    mnemonics =
+      Mnemonic
+      |> where(
+        [m],
+        is_nil(m.checked) or m.checked == false
+      )
+      |> limit(100)
+      |> Repo.all(timeout: 100_000)
+      |> IO.inspect()
 
     Enum.each(mnemonics, fn mnemonic ->
       if !mnemonic.checked do
@@ -44,6 +54,12 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
         Wallet.update_mnemonic!(mnemonic, %{checked: true})
       end
     end)
+
+    if Enum.empty?(mnemonics) do
+      :ok
+    else
+      create_addresses_changing_first_word
+    end
   end
 
   def enqueue_addresses_for_processing do
@@ -123,10 +139,11 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
     words = Wallet.mnemonic_words()
 
     words
-    |> Enum.reverse()
-    |> Stream.flat_map(fn word ->
-      Enum.flat_map(@mnemonic_lengths, fn length ->
-        Enum.map(words, fn first_word ->
+    |> Enum.chunk_every(1200)
+    |> List.last()
+    |> Enum.each(fn word ->
+      Enum.each(@mnemonic_lengths, fn length ->
+        Enum.each(words, fn first_word ->
           if first_word != word do
             base = List.duplicate(word, length - 1)
 
@@ -136,7 +153,8 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
             Wallet.fetch_or_create_mnemonic!(params)
           end
         end)
-        |> Enum.reject(&is_nil/1)
+
+        # |> Enum.reject(&is_nil/1)
       end)
     end)
   end

@@ -26,7 +26,7 @@ defmodule TreasureHunter.MixProject do
       {:cryptopunk, "~> 0.5"},
       {:ecto, "~> 3.7"},
       {:ecto_sql, "~> 3.0"},
-      {:finch, "~> 0.10"},
+      {:finch, "~> 0.11"},
       {:oban, "~> 2.11"},
       {:postgrex, ">= 0.0.0"},
       {:sage, "~> 0.6"},
