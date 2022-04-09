@@ -1,6 +1,8 @@
 defmodule TreasureHunter.Dogecoin.ExplorerAPI do
   alias TreasureHunter.HTTPClient
 
+  require Logger
+
   @behaviour TreasureHunter.ExplorerAPI
 
   @base_url "https://sochain.com/api/v2/address/DOGE/"
@@ -61,7 +63,8 @@ defmodule TreasureHunter.Dogecoin.ExplorerAPI do
 
         {:ok, result}
 
-      _other ->
+      other ->
+        Logger.error("Dogecoin - invalid response #{inspect(other)}")
         {:error, :invalid_response}
     end
   end

@@ -61,6 +61,13 @@ defmodule TreasureHunter.Wallet do
     Map.fetch!(@addresses, chain)
   end
 
+  @spec create_master_key(String.t()) :: Cryptopunk.Key.t()
+  def create_master_key(mnemonic) do
+    mnemonic
+    |> Cryptopunk.create_seed()
+    |> Cryptopunk.master_key_from_seed()
+  end
+
   defp create_mnemonic!(params) do
     %Mnemonic{}
     |> Mnemonic.changeset(params)
