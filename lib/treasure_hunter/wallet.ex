@@ -1,8 +1,14 @@
 defmodule TreasureHunter.Wallet do
-  alias TreasureHunter.Bitcoin.Worker
   alias TreasureHunter.Repo
   alias TreasureHunter.Wallet.BitcoinAddress
+  alias TreasureHunter.Wallet.DogecoinAddress
   alias TreasureHunter.Wallet.Mnemonic
+  alias TreasureHunter.Worker
+
+  @addresses %{
+    :bitcoin => BitcoinAddress,
+    :dogecoin => DogecoinAddress
+  }
 
   @spec fetch_or_create_mnemonic!(Map.t()) :: Mnemonic.t() | no_return()
   def fetch_or_create_mnemonic!(params) do
@@ -12,19 +18,21 @@ defmodule TreasureHunter.Wallet do
     end
   end
 
-  @spec create_address!(Map.t()) :: Address.t() | no_return()
-  def create_address!(params) do
-    case Repo.get_by(BitcoinAddress, params) do
-      nil ->
-        address = do_create_address!(params)
+  @spec create_address!(Map.t(), atom()) :: Address.t() | no_return()
+  def create_address!(params, chain \\ :bitcoin) do
+    schema = address_schema(chain)
 
-        enqueue_job(address.id)
+    case Repo.get_by(schema, params) do
+      nil ->
+        address = do_create_address!(schema, params)
+
+        enqueue_job(address.id, chain)
 
         address
 
       found ->
         if !found.checked do
-          enqueue_job(found.id)
+          enqueue_job(found.id, chain)
         end
 
         found
@@ -48,20 +56,25 @@ defmodule TreasureHunter.Wallet do
     |> Repo.update!()
   end
 
+  @spec address_schema(atom()) :: module() | no_return()
+  def address_schema(chain) do
+    Map.fetch!(@addresses, chain)
+  end
+
   defp create_mnemonic!(params) do
     %Mnemonic{}
     |> Mnemonic.changeset(params)
     |> Repo.insert!()
   end
 
-  defp do_create_address!(params) do
-    %BitcoinAddress{}
+  defp do_create_address!(schema, params) do
+    struct(schema)
     |> BitcoinAddress.changeset(params)
     |> Repo.insert!()
   end
 
-  defp enqueue_job(id) do
-    %{id: id}
+  defp enqueue_job(id, chain) do
+    %{id: id, chain: chain}
     |> Worker.new()
     |> Oban.insert()
   end

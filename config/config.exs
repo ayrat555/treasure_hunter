@@ -14,7 +14,7 @@ config :treasure_hunter,
 config :treasure_hunter, Oban,
   repo: TreasureHunter.Repo,
   plugins: [Oban.Plugins.Pruner],
-  queues: [bitcoin: 50]
+  queues: [default: 50]
 
 config :treasure_hunter, Bitcoin, api_client: TreasureHunter.Bitcoin.ExplorerAPI
 

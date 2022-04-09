@@ -2,11 +2,11 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
   import Ecto.Query
 
   alias Cryptopunk.Crypto.Bitcoin
-  alias TreasureHunter.Bitcoin.Worker
   alias TreasureHunter.Repo
   alias TreasureHunter.Wallet
   alias TreasureHunter.Wallet.BitcoinAddress
   alias TreasureHunter.Wallet.Mnemonic
+  alias TreasureHunter.Worker
 
   @legacy_path "m/44'/0'"
   @bech32_path "m/84'/0'"
