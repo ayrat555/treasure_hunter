@@ -9,7 +9,7 @@ defmodule TreasureHunter.Bitcoin.WorkerTest do
 
   describe "perfom/1" do
     test "fetches tx_count, balance and updates address" do
-      address = insert(:address)
+      address = insert(:bitcoin_address)
       response = %{tx_count: 100, balance: 1}
 
       MockExplorerAPI

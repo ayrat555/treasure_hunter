@@ -4,7 +4,7 @@ defmodule TreasureHunter.Bitcoin.Worker do
     unique: [period: 30]
 
   alias TreasureHunter.Repo
-  alias TreasureHunter.Wallet.Address
+  alias TreasureHunter.Wallet.BitcoinAddress
 
   @impl Worker
   def perform(%{args: %{"id" => address_id}}) do
@@ -23,7 +23,7 @@ defmodule TreasureHunter.Bitcoin.Worker do
   end
 
   defp fetch_address(_effects_so_far, %{address_id: id}) do
-    case Repo.get_by(Address, id: id) do
+    case Repo.get_by(BitcoinAddress, id: id) do
       nil -> {:error, :not_found}
       address -> {:ok, address}
     end
@@ -41,7 +41,7 @@ defmodule TreasureHunter.Bitcoin.Worker do
          _params
        ) do
     address
-    |> Address.changeset(%{tx_count: tx_count, balance: balance, checked: true})
+    |> BitcoinAddress.changeset(%{tx_count: tx_count, balance: balance, checked: true})
     |> Repo.update()
   end
 

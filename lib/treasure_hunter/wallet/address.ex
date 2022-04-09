@@ -1,4 +1,4 @@
-defmodule TreasureHunter.Wallet.Address do
+defmodule TreasureHunter.Wallet.BitcoinAddress do
   use Ecto.Schema
 
   import Ecto.Changeset

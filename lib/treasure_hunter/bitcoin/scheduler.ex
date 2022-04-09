@@ -5,7 +5,7 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
   alias TreasureHunter.Bitcoin.Worker
   alias TreasureHunter.Repo
   alias TreasureHunter.Wallet
-  alias TreasureHunter.Wallet.Address
+  alias TreasureHunter.Wallet.BitcoinAddress
   alias TreasureHunter.Wallet.Mnemonic
 
   @legacy_path "m/44'/0'"
@@ -66,7 +66,7 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
     crypto = fetch_crypto()
 
     addresses =
-      Address
+      BitcoinAddress
       |> where(
         [address],
         address.crypto_id == ^crypto.id and (address.checked == false or is_nil(address.checked))

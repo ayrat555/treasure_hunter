@@ -1,7 +1,7 @@
 defmodule TreasureHunter.Wallet do
   alias TreasureHunter.Bitcoin.Worker
   alias TreasureHunter.Repo
-  alias TreasureHunter.Wallet.Address
+  alias TreasureHunter.Wallet.BitcoinAddress
   alias TreasureHunter.Wallet.Crypto
   alias TreasureHunter.Wallet.Mnemonic
 
@@ -23,7 +23,7 @@ defmodule TreasureHunter.Wallet do
 
   @spec create_address!(Map.t()) :: Address.t() | no_return()
   def create_address!(params) do
-    case Repo.get_by(Address, params) do
+    case Repo.get_by(BitcoinAddress, params) do
       nil ->
         address = do_create_address!(params)
 
@@ -70,8 +70,8 @@ defmodule TreasureHunter.Wallet do
   end
 
   defp do_create_address!(params) do
-    %Address{}
-    |> Address.changeset(params)
+    %BitcoinAddress{}
+    |> BitcoinAddress.changeset(params)
     |> Repo.insert!()
   end
 
