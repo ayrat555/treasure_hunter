@@ -17,14 +17,13 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
 
   def create_addresses_from_naive_mnemonics do
     mnemonics = create_mnemonics()
-    crypto = fetch_crypto()
 
     Enum.each(mnemonics, fn mnemonic ->
       if !mnemonic.checked do
-        create_legacy_addresses(mnemonic, crypto)
-        create_legacy_uncompressed_addresses(mnemonic, crypto)
-        create_bech32_addresses(mnemonic, crypto)
-        create_p2sh_p2wpkh_addresses(mnemonic, crypto)
+        create_legacy_addresses(mnemonic)
+        create_legacy_uncompressed_addresses(mnemonic)
+        create_bech32_addresses(mnemonic)
+        create_p2sh_p2wpkh_addresses(mnemonic)
 
         Wallet.update_mnemonic!(mnemonic, %{checked: true})
       end
@@ -32,8 +31,6 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
   end
 
   def create_addresses_changing_first_word do
-    crypto = fetch_crypto()
-
     mnemonics =
       Mnemonic
       |> where(
@@ -46,10 +43,10 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
 
     Enum.each(mnemonics, fn mnemonic ->
       if !mnemonic.checked do
-        create_legacy_addresses(mnemonic, crypto)
-        create_legacy_uncompressed_addresses(mnemonic, crypto)
-        create_bech32_addresses(mnemonic, crypto)
-        create_p2sh_p2wpkh_addresses(mnemonic, crypto)
+        create_legacy_addresses(mnemonic)
+        create_legacy_uncompressed_addresses(mnemonic)
+        create_bech32_addresses(mnemonic)
+        create_p2sh_p2wpkh_addresses(mnemonic)
 
         Wallet.update_mnemonic!(mnemonic, %{checked: true})
       end
@@ -58,18 +55,16 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
     if Enum.empty?(mnemonics) do
       :ok
     else
-      create_addresses_changing_first_word
+      create_addresses_changing_first_word()
     end
   end
 
   def enqueue_addresses_for_processing do
-    crypto = fetch_crypto()
-
     addresses =
       BitcoinAddress
       |> where(
         [address],
-        address.crypto_id == ^crypto.id and (address.checked == false or is_nil(address.checked))
+        address.checked == false or is_nil(address.checked)
       )
       |> limit(500)
       |> Repo.all()
@@ -87,36 +82,36 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
     end
   end
 
-  defp create_legacy_addresses(mnemonic, crypto) do
+  defp create_legacy_addresses(mnemonic) do
     address_func = fn key ->
       Bitcoin.legacy_address(key, @network)
     end
 
-    create_addresses(@legacy_path, mnemonic, crypto, address_func)
+    create_addresses(@legacy_path, mnemonic, address_func)
   end
 
-  defp create_legacy_uncompressed_addresses(mnemonic, crypto) do
+  defp create_legacy_uncompressed_addresses(mnemonic) do
     address_func = fn key ->
       Bitcoin.legacy_address(key, @network, uncompressed: true)
     end
 
-    create_addresses(@legacy_path, mnemonic, crypto, address_func, %{uncompressed: true})
+    create_addresses(@legacy_path, mnemonic, address_func, %{uncompressed: true})
   end
 
-  defp create_bech32_addresses(mnemonic, crypto) do
+  defp create_bech32_addresses(mnemonic) do
     address_func = fn key ->
       Bitcoin.bech32_address(key, @network)
     end
 
-    create_addresses(@bech32_path, mnemonic, crypto, address_func)
+    create_addresses(@bech32_path, mnemonic, address_func)
   end
 
-  defp create_p2sh_p2wpkh_addresses(mnemonic, crypto) do
+  defp create_p2sh_p2wpkh_addresses(mnemonic) do
     address_func = fn key ->
       Bitcoin.p2sh_p2wpkh_address(key, @network)
     end
 
-    create_addresses(@p2sh_p2wpkh_path, mnemonic, crypto, address_func)
+    create_addresses(@p2sh_p2wpkh_path, mnemonic, address_func)
   end
 
   def create_mnemonics do
@@ -159,7 +154,7 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
     end)
   end
 
-  defp create_addresses(path_prefix, mnemonic, crypto, address_func, additional_params \\ %{}) do
+  defp create_addresses(path_prefix, mnemonic, address_func, additional_params \\ %{}) do
     master_key = create_master_key(mnemonic.mnemonic)
     raw_paths = create_raw_paths(path_prefix)
 
@@ -171,7 +166,7 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
 
       params =
         Map.merge(
-          %{address: address, path: raw_path, crypto_id: crypto.id, mnemonic_id: mnemonic.id},
+          %{address: address, path: raw_path, mnemonic_id: mnemonic.id},
           additional_params
         )
 
@@ -197,9 +192,5 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
         end)
       end)
     end)
-  end
-
-  defp fetch_crypto do
-    Wallet.fetch_or_create_crypto!(:bitcoin)
   end
 end

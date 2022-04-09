@@ -2,14 +2,12 @@ defmodule TreasureHunter.Factory do
   use ExMachina.Ecto, repo: TreasureHunter.Repo
 
   alias TreasureHunter.Wallet.BitcoinAddress
-  alias TreasureHunter.Wallet.Crypto
   alias TreasureHunter.Wallet.Mnemonic
 
   def bitcoin_address_factory do
     %BitcoinAddress{
       path: "path",
       mnemonic: build(:mnemonic),
-      crypto: build(:crypto),
       address: "address"
     }
   end
@@ -18,12 +16,6 @@ defmodule TreasureHunter.Factory do
     %Mnemonic{
       type: :bip39,
       mnemonic: "secret"
-    }
-  end
-
-  def crypto_factory do
-    %Crypto{
-      type: :bitcoin
     }
   end
 end
