@@ -11,4 +11,5 @@ config :treasure_hunter, TreasureHunter.Repo,
 
 config :treasure_hunter, Oban, queues: false, plugins: false
 
-config :treasure_hunter, Bitcoin, api_client: MockExplorerAPI
+config :treasure_hunter, TreasureHunter.Worker,
+  api_clients: %{bitcoin: MockExplorerAPI, dogecoin: MockExplorerAPI}

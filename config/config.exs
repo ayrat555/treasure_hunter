@@ -16,6 +16,10 @@ config :treasure_hunter, Oban,
   plugins: [Oban.Plugins.Pruner],
   queues: [default: 50]
 
-config :treasure_hunter, Bitcoin, api_client: TreasureHunter.Bitcoin.ExplorerAPI
+config :treasure_hunter, TreasureHunter.Worker,
+  api_clients: %{
+    bitcoin: TreasureHunter.Bitcoin.ExplorerAPI,
+    dogecoin: TreasureHunter.Dogecoin.ExplorerAPI
+  }
 
 import_config "#{Mix.env()}.exs"

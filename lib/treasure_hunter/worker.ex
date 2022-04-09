@@ -8,7 +8,9 @@ defmodule TreasureHunter.Worker do
 
   @impl Worker
   def perform(%{args: %{"id" => address_id, "chain" => chain}}) do
-    case do_perform(address_id, chain) do
+    chain_atom = String.to_existing_atom(chain)
+
+    case do_perform(address_id, chain_atom) do
       {:ok, address, _} -> {:ok, address}
       error -> error
     end
@@ -24,10 +26,7 @@ defmodule TreasureHunter.Worker do
   end
 
   defp fetch_schema(_effects_so_far, %{chain: chain}) do
-    schema =
-      chain
-      |> String.to_existing_atom()
-      |> Wallet.address_schema()
+    schema = Wallet.address_schema(chain)
 
     {:ok, schema}
   end
@@ -39,8 +38,8 @@ defmodule TreasureHunter.Worker do
     end
   end
 
-  defp fetch_tx_count_and_balance(%{fetch_address: address}, _params) do
-    api_client().fetch_info(address.address)
+  defp fetch_tx_count_and_balance(%{fetch_address: address}, %{chain: chain}) do
+    api_client(chain).fetch_info(address.address)
   end
 
   defp update_address(
@@ -55,9 +54,10 @@ defmodule TreasureHunter.Worker do
     |> Repo.update()
   end
 
-  defp api_client do
+  defp api_client(chain) do
     :treasure_hunter
-    |> Application.fetch_env!(Bitcoin)
-    |> Keyword.fetch!(:api_client)
+    |> Application.fetch_env!(__MODULE__)
+    |> Keyword.fetch!(:api_clients)
+    |> Map.fetch!(chain)
   end
 end
