@@ -14,12 +14,12 @@ config :treasure_hunter,
 config :treasure_hunter, Oban,
   repo: TreasureHunter.Repo,
   plugins: [Oban.Plugins.Pruner],
-  queues: [default: 50]
+  queues: [default: 2]
 
 config :treasure_hunter, TreasureHunter.Worker,
   api_clients: %{
     bitcoin: TreasureHunter.Bitcoin.ExplorerAPI,
-    dogecoin: TreasureHunter.Dogecoin.ExplorerAPI
+    dogecoin: TreasureHunter.Dogecoin.DogecoinAPI
   }
 
 import_config "#{Mix.env()}.exs"
