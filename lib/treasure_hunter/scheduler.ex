@@ -1,4 +1,4 @@
-defmodule TreasureHunter.Bitcoin.Scheduler do
+defmodule TreasureHunter.Scheduler do
   import Ecto.Query
 
   alias Cryptopunk.Crypto.Bitcoin
@@ -39,7 +39,6 @@ defmodule TreasureHunter.Bitcoin.Scheduler do
       )
       |> limit(100)
       |> Repo.all(timeout: 100_000)
-      |> IO.inspect()
 
     Enum.each(mnemonics, fn mnemonic ->
       if !mnemonic.checked do
