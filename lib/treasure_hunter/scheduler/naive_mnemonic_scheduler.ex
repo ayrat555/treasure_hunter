@@ -1,6 +1,7 @@
 defmodule TreasureHunter.NaiveMnemonicScheduler do
   alias TreasureHunter.Bitcoin.Addresses, as: BitcoinAddresses
   alias TreasureHunter.Dogecoin.Addresses, as: DogecoinAddresses
+  alias TreasureHunter.Tron.Addresses, as: TronAddresses
   alias TreasureHunter.Wallet
 
   @mnemonic_lengths [12, 15, 18, 21, 24]
@@ -34,6 +35,10 @@ defmodule TreasureHunter.NaiveMnemonicScheduler do
 
   defp create_addresses(:dogecoin, mnemonic) do
     DogecoinAddresses.generate(mnemonic)
+  end
+
+  defp create_addresses(:tron, mnemonic) do
+    TronAddresses.generate(mnemonic)
   end
 
   defp create_mnemonic(word, length, first_run) do

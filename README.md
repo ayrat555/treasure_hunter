@@ -50,3 +50,11 @@ Enum.map(0..20, fn idx ->
     Bitcoin.bech32_address(key, :mainnet) |> IO.inspect() |>  TreasureHunter.Bitcoin.ExplorerAPI.fetch_info() |> IO.inspect
 end)
 ```
+
+
+### Chain backlog
+
+  * Bitcoin Gold
+  * Ethereum
+  * Binance Smart Chain
+  * Tron

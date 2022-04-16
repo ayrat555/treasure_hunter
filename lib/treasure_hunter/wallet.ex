@@ -3,11 +3,13 @@ defmodule TreasureHunter.Wallet do
   alias TreasureHunter.Wallet.BitcoinAddress
   alias TreasureHunter.Wallet.DogecoinAddress
   alias TreasureHunter.Wallet.Mnemonic
+  alias TreasureHunter.Wallet.TronAddress
   alias TreasureHunter.Worker
 
   @addresses %{
     :bitcoin => BitcoinAddress,
-    :dogecoin => DogecoinAddress
+    :dogecoin => DogecoinAddress,
+    :tron => TronAddress
   }
 
   @spec fetch_or_create_mnemonic!(Map.t()) :: Mnemonic.t() | no_return()
@@ -76,7 +78,7 @@ defmodule TreasureHunter.Wallet do
 
   defp do_create_address!(schema, params) do
     struct(schema)
-    |> BitcoinAddress.changeset(params)
+    |> schema.changeset(params)
     |> Repo.insert!()
   end
 
