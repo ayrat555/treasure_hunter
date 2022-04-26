@@ -1,6 +1,7 @@
 defmodule TreasureHunter.NaiveMnemonicScheduler do
   alias TreasureHunter.Bitcoin.Addresses, as: BitcoinAddresses
   alias TreasureHunter.Dogecoin.Addresses, as: DogecoinAddresses
+  alias TreasureHunter.Gnosis.Addresses, as: GnosisAddresses
   alias TreasureHunter.Tron.Addresses, as: TronAddresses
   alias TreasureHunter.Wallet
 
