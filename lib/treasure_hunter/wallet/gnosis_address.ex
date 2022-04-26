@@ -1,4 +1,4 @@
-defmodule TreasureHunter.Gnosis.TronAddress do
+defmodule TreasureHunter.Wallet.GnosisAddress do
   use Ecto.Schema
 
   import Ecto.Changeset

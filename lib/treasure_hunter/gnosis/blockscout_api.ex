@@ -14,9 +14,9 @@ defmodule TreasureHunter.Gnosis.BlockscoutAPI do
     with {:ok, balance, _} <- fetch_balance(address),
          {:ok, tokens, _} <- fetch_token_balances(address) do
       if balance > 0 or !Enum.empty?(tokens) do
-        {:ok, %{balance: balance, tokens: tokens}}
+        {:ok, %{balance: %{balance: balance, tokens: tokens}, tx_count: nil}}
       else
-        {:ok, nil}
+        {:ok, %{balance: nil, tx_count: nil}}
       end
     end
   end
@@ -56,6 +56,7 @@ defmodule TreasureHunter.Gnosis.BlockscoutAPI do
   defp send_request(%{build_request: request}, _params) do
     case Finch.request(request, HTTPClient) do
       {:ok, %Finch.Response{status: 200, body: body}} ->
+        sleep()
         {:ok, body}
 
       {:ok, %Finch.Response{body: body, status: status}} ->
@@ -107,5 +108,10 @@ defmodule TreasureHunter.Gnosis.BlockscoutAPI do
     Logger.error("Failed to parse balance #{inspect(parse_body)}")
 
     {:error, :response_error}
+  end
+
+  ## TODO: implement rate limiter
+  defp sleep() do
+    Process.sleep(2_000)
   end
 end

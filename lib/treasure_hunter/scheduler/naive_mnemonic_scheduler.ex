@@ -42,6 +42,10 @@ defmodule TreasureHunter.NaiveMnemonicScheduler do
     TronAddresses.generate(mnemonic)
   end
 
+  defp create_addresses(:gnosis, mnemonic) do
+    GnosisAddresses.generate(mnemonic)
+  end
+
   defp create_mnemonic(word, length, first_run) do
     mnemonic =
       word
