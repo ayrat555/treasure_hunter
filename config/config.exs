@@ -20,7 +20,8 @@ config :treasure_hunter, TreasureHunter.Worker,
   api_clients: %{
     bitcoin: TreasureHunter.Bitcoin.ExplorerAPI,
     dogecoin: TreasureHunter.Dogecoin.DogecoinAPI,
-    tron: TreasureHunter.Tron.TronscanAPI
+    tron: TreasureHunter.Tron.TronscanAPI,
+    gnosis: TreasureHunter.Gnosis.BlockscoutAPI
   }
 
 import_config "#{Mix.env()}.exs"
