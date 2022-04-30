@@ -32,6 +32,7 @@ defmodule TreasureHunter.Ethereum.EtherscanAPI do
   defp fetch_txs(address) do
     Sage.new()
     |> Sage.run(:build_request, &build_request/2)
+    |> Sage.run(:maybe_wait_rate_limit, &maybe_wait_rate_limit/2)
     |> Sage.run(:send_request, &send_request/2)
     |> Sage.run(:parse_body, &parse_body/2)
     |> Sage.run(:parse_txs, &parse_txs/2)
@@ -41,6 +42,7 @@ defmodule TreasureHunter.Ethereum.EtherscanAPI do
   defp fetch_balance(address) do
     Sage.new()
     |> Sage.run(:build_request, &build_request/2)
+    |> Sage.run(:maybe_wait_rate_limit, &maybe_wait_rate_limit/2)
     |> Sage.run(:send_request, &send_request/2)
     |> Sage.run(:parse_body, &parse_body/2)
     |> Sage.run(:parse_balance, &parse_balance/2)
@@ -69,6 +71,10 @@ defmodule TreasureHunter.Ethereum.EtherscanAPI do
     request = Finch.build(:get, url)
 
     {:ok, request}
+  end
+
+  defp maybe_wait_rate_limit(_effects_so_far, _params) do
+    maybe_wait()
   end
 
   defp send_request(%{build_request: request}, _params) do
@@ -131,5 +137,16 @@ defmodule TreasureHunter.Ethereum.EtherscanAPI do
     :treasure_hunter
     |> Application.fetch_env!(__MODULE__)
     |> Keyword.fetch!(:api_key)
+  end
+
+  defp maybe_wait do
+    case ExRated.check_rate("etherscan", 1_000, 4) do
+      {:ok, _} = result ->
+        result
+
+      _other ->
+        Process.sleep(1_000)
+        maybe_wait()
+    end
   end
 end

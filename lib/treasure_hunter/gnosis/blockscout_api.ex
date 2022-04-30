@@ -24,6 +24,7 @@ defmodule TreasureHunter.Gnosis.BlockscoutAPI do
   defp fetch_token_balances(address) do
     Sage.new()
     |> Sage.run(:build_request, &build_request/2)
+    |> Sage.run(:maybe_wait_rate_limit, &maybe_wait_rate_limit/2)
     |> Sage.run(:send_request, &send_request/2)
     |> Sage.run(:parse_body, &parse_body/2)
     |> Sage.run(:parse_tokens, &parse_tokens/2)
@@ -33,6 +34,7 @@ defmodule TreasureHunter.Gnosis.BlockscoutAPI do
   defp fetch_balance(address) do
     Sage.new()
     |> Sage.run(:build_request, &build_request/2)
+    |> Sage.run(:maybe_wait_rate_limit, &maybe_wait_rate_limit/2)
     |> Sage.run(:send_request, &send_request/2)
     |> Sage.run(:parse_body, &parse_body/2)
     |> Sage.run(:parse_balance, &parse_balance/2)
@@ -53,10 +55,13 @@ defmodule TreasureHunter.Gnosis.BlockscoutAPI do
     {:ok, request}
   end
 
+  defp maybe_wait_rate_limit(_effects_so_far, _params) do
+    maybe_wait()
+  end
+
   defp send_request(%{build_request: request}, _params) do
     case Finch.request(request, HTTPClient) do
       {:ok, %Finch.Response{status: 200, body: body}} ->
-        sleep()
         {:ok, body}
 
       {:ok, %Finch.Response{body: body, status: status}} ->
@@ -110,8 +115,14 @@ defmodule TreasureHunter.Gnosis.BlockscoutAPI do
     {:error, :response_error}
   end
 
-  ## TODO: implement rate limiter
-  defp sleep() do
-    Process.sleep(2_000)
+  defp maybe_wait do
+    case ExRated.check_rate("blockscout", 2_000, 1) do
+      {:ok, _} = result ->
+        result
+
+      _other ->
+        Process.sleep(1_000)
+        maybe_wait()
+    end
   end
 end
