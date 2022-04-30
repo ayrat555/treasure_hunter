@@ -2,6 +2,7 @@ defmodule TreasureHunter.Wallet do
   alias TreasureHunter.Repo
   alias TreasureHunter.Wallet.BitcoinAddress
   alias TreasureHunter.Wallet.DogecoinAddress
+  alias TreasureHunter.Wallet.EthereumAddress
   alias TreasureHunter.Wallet.GnosisAddress
   alias TreasureHunter.Wallet.Mnemonic
   alias TreasureHunter.Wallet.TronAddress
@@ -11,7 +12,8 @@ defmodule TreasureHunter.Wallet do
     :bitcoin => BitcoinAddress,
     :dogecoin => DogecoinAddress,
     :tron => TronAddress,
-    :gnosis => GnosisAddress
+    :gnosis => GnosisAddress,
+    :ethereum => EthereumAddress
   }
 
   @spec fetch_or_create_mnemonic!(Map.t()) :: Mnemonic.t() | no_return()

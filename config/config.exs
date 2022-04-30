@@ -21,7 +21,10 @@ config :treasure_hunter, TreasureHunter.Worker,
     bitcoin: TreasureHunter.Bitcoin.ExplorerAPI,
     dogecoin: TreasureHunter.Dogecoin.DogecoinAPI,
     tron: TreasureHunter.Tron.TronscanAPI,
-    gnosis: TreasureHunter.Gnosis.BlockscoutAPI
+    gnosis: TreasureHunter.Gnosis.BlockscoutAPI,
+    ethereum: TreasureHunter.Ethereum.EtherscanAPI
   }
+
+config :treasure_hunter, TreasureHunter.Ethereum.EtherscanAPI, api_key: "token"
 
 import_config "#{Mix.env()}.exs"

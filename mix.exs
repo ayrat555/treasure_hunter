@@ -24,6 +24,7 @@ defmodule TreasureHunter.MixProject do
   defp deps do
     [
       {:cryptopunk, "~> 0.5"},
+      {:ex_rated, "~> 2.0"},
       {:ecto, "~> 3.7"},
       {:ecto_sql, "~> 3.0"},
       {:finch, "~> 0.11"},

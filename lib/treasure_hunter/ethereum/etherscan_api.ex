@@ -1,34 +1,42 @@
-defmodule TreasureHunter.Gnosis.BlockscoutAPI do
+defmodule TreasureHunter.Ethereum.EtherscanAPI do
   alias TreasureHunter.HTTPClient
 
   require Logger
 
   @behaviour TreasureHunter.ExplorerAPI
 
-  @base_url "https://blockscout.com/xdai/mainnet/api"
-  @balance_path "?module=account&action=balance&address="
-  @tokens_path "?module=account&action=tokenlist&address="
+  @base_url "https://api.etherscan.io/api"
+  @balance_params %{module: "account", action: "balance", tag: "latest"}
+  @tx_params %{
+    module: "account",
+    action: "txlist",
+    startblock: 0,
+    endblock: 14_686_160,
+    page: 1,
+    offset: 10,
+    sort: "asc"
+  }
 
   @impl true
   def fetch_info(address) do
     with {:ok, balance, _} <- fetch_balance(address),
-         {:ok, tokens, _} <- fetch_token_balances(address) do
-      if balance > 0 or !Enum.empty?(tokens) do
-        {:ok, %{balance: %{balance: balance, tokens: tokens}, tx_count: nil}}
+         {:ok, txs, _} <- fetch_txs(address) do
+      if balance > 0 or !Enum.empty?(txs) do
+        {:ok, %{balance: %{balance: balance, txs: txs}, tx_count: Enum.count(txs)}}
       else
         {:ok, %{balance: nil, tx_count: nil}}
       end
     end
   end
 
-  defp fetch_token_balances(address) do
+  defp fetch_txs(address) do
     Sage.new()
     |> Sage.run(:build_request, &build_request/2)
     |> Sage.run(:maybe_wait_rate_limit, &maybe_wait_rate_limit/2)
     |> Sage.run(:send_request, &send_request/2)
     |> Sage.run(:parse_body, &parse_body/2)
-    |> Sage.run(:parse_tokens, &parse_tokens/2)
-    |> Sage.execute(%{address: address, request: :tokens})
+    |> Sage.run(:parse_txs, &parse_txs/2)
+    |> Sage.execute(%{address: address, request: :txs})
   end
 
   defp fetch_balance(address) do
@@ -42,14 +50,24 @@ defmodule TreasureHunter.Gnosis.BlockscoutAPI do
   end
 
   defp build_request(_effects_so_far, %{address: address, request: :balance}) do
-    url = @base_url <> @balance_path <> address
+    encoded_params =
+      %{address: address, apikey: api_key()}
+      |> Map.merge(@balance_params)
+      |> URI.encode_query()
+
+    url = @base_url <> "?" <> encoded_params
     request = Finch.build(:get, url)
 
     {:ok, request}
   end
 
-  defp build_request(_effects_so_far, %{address: address, request: :tokens}) do
-    url = @base_url <> @tokens_path <> address
+  defp build_request(_effects_so_far, %{address: address, request: :txs}) do
+    encoded_params =
+      %{address: address, apikey: api_key()}
+      |> Map.merge(@tx_params)
+      |> URI.encode_query()
+
+    url = @base_url <> "?" <> encoded_params
     request = Finch.build(:get, url)
 
     {:ok, request}
@@ -89,34 +107,40 @@ defmodule TreasureHunter.Gnosis.BlockscoutAPI do
     {:error, :response_error}
   end
 
-  defp parse_tokens(
-         %{parse_body: %{"message" => "No tokens found", "result" => [], "status" => "0"}},
+  defp parse_txs(
+         %{parse_body: %{"message" => "No transactions found", "result" => [], "status" => "0"}},
          _
        ) do
     {:ok, []}
   end
 
-  defp parse_tokens(
+  defp parse_txs(
          %{
            parse_body: %{
              "message" => "OK",
-             "result" => tokens,
+             "result" => txs,
              "status" => "1"
            }
          },
          _
        ) do
-    {:ok, tokens}
+    {:ok, txs}
   end
 
-  defp parse_tokens(%{parse_body: parse_body}, _) do
-    Logger.error("Failed to parse balance #{inspect(parse_body)}")
+  defp parse_txs(%{parse_body: parse_body}, _) do
+    Logger.error("Failed to parse txs #{inspect(parse_body)}")
 
     {:error, :response_error}
   end
 
+  defp api_key do
+    :treasure_hunter
+    |> Application.fetch_env!(__MODULE__)
+    |> Keyword.fetch!(:api_key)
+  end
+
   defp maybe_wait do
-    case ExRated.check_rate("blockscout", 2_000, 1) do
+    case ExRated.check_rate("etherscan", 1_000, 4) do
       {:ok, _} = result ->
         result
 
