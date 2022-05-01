@@ -22,7 +22,7 @@ defmodule TreasureHunter.Ethereum.EtherscanAPI do
     with {:ok, balance, _} <- fetch_balance(address),
          {:ok, txs, _} <- fetch_txs(address) do
       if balance > 0 or !Enum.empty?(txs) do
-        {:ok, %{balance: %{balance: balance, txs: txs}, tx_count: Enum.count(txs)}}
+        {:ok, %{balance: %{balance: balance, txs: true}, tx_count: Enum.count(txs)}}
       else
         {:ok, %{balance: nil, tx_count: nil}}
       end
@@ -140,7 +140,7 @@ defmodule TreasureHunter.Ethereum.EtherscanAPI do
   end
 
   defp maybe_wait do
-    case ExRated.check_rate("etherscan", 1_000, 4) do
+    case ExRated.check_rate("etherscan", 1_000, 3) do
       {:ok, _} = result ->
         result
 

@@ -1,9 +1,9 @@
-defmodule TreasureHunter.Gnosis.BlockscoutAPI do
+defmodule TreasureHunter.EthereumClassic.BlockscoutAPI do
   alias TreasureHunter.BlockscoutAPI
 
   @behaviour TreasureHunter.ExplorerAPI
 
-  @base_url "https://blockscout.com/xdai/mainnet/api"
+  @base_url "https://blockscout.com/etc/mainnet/api"
 
   @impl true
   def fetch_info(address) do
