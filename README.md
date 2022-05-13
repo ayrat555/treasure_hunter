@@ -1,6 +1,20 @@
 # TreasureHunter
 
-**TODO: Add description**
+A project for hacking crypto wallets protected with naive mnemonics.
+
+See https://www.badykov.com/common/hack/
+
+## Description
+
+For each blockchain, it does the following:
+
+1. Generates 10_240 master keys from naive mnemonics
+2. Derives a fixed number of private keys from the master keys
+3. For each generated child key, it generates some addresses according to [BIP-32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki) and [BIP44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
+4. Each generated address is checked against a block explorer. Since block explorer APIs are not consistent across all blockchains, the project implements API wrappers for each of them
+5. If the address is found in a block explorer, it means we succeeded and found a mnemonic that can unlock it
+
+For steps 1 - 3 my crypto wallet library ["Cryptopunk"](https://github.com/ayrat555/cryptopunk) is used, it contains the required logic for generating different types of addresses from public keys.
 
 ## Installation
 
